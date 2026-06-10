@@ -1,0 +1,15 @@
+!table
+!version 300
+!charset WindowsLatin1
+
+Definition Table
+  Type NATIVE Charset "WindowsLatin1"
+  Fields 2
+    KnKod Char (4) Index 1 ;
+    KnNamn Char (15) Index 2 ;
+begin_metadata
+"\MapInfo" = ""
+"\MapInfo\TableID" = "6b951346-0ed0-4fdf-9893-79398f968eb8"
+"\MapInfo\ParentTableID" = "5505f6c7-db00-4b1a-a344-db38bbddbb57"
+"\IsReadOnly" = "FALSE"
+end_metadata
