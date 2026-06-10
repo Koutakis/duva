@@ -5,10 +5,12 @@ from duva import duva_df
 
 @pytest.fixture
 def sample_df() -> pl.DataFrame:
-    return pl.DataFrame({
-        "lon": [17.88, 20.5, 18.07, None],
-        "lat": [59.35, 57.5, 59.28, None],
-    })
+    return pl.DataFrame(
+        {
+            "lon": [17.88, 20.5, 18.07, None],
+            "lat": [59.35, 57.5, 59.28, None],
+        }
+    )
 
 
 def test_returns_polars_dataframe(sample_df: pl.DataFrame):

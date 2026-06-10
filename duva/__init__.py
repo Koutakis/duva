@@ -7,12 +7,15 @@ from shapely.geometry import Point
 _GPKG_PATH = Path(__file__).parent / "RegSO_2025.gpkg"
 _KOMMUN_PATH = Path(__file__).parent / "Kommun_Sweref99TM.TAB"
 
-_GDF: gpd.GeoDataFrame = gpd.read_file(_GPKG_PATH).drop(columns=["objectid", "geometry"])
+_GDF: gpd.GeoDataFrame = gpd.read_file(_GPKG_PATH).drop(
+    columns=["objectid", "geometry"]
+)
 _GDF_GEO: gpd.GeoDataFrame = gpd.read_file(_GPKG_PATH)[["regsokod", "geometry"]]
-_KOMMUN_GEO: gpd.GeoDataFrame = gpd.read_file(_KOMMUN_PATH)[["KnKod", "KnNamn", "geometry"]].set_crs("EPSG:3006", allow_override=True)
+_KOMMUN_GEO: gpd.GeoDataFrame = gpd.read_file(_KOMMUN_PATH)[
+    ["KnKod", "KnNamn", "geometry"]
+].set_crs("EPSG:3006", allow_override=True)
 _KOD_INDEX: dict[str, dict] = {
-    row["regsokod"]: row
-    for row in _GDF.to_dict(orient="records")
+    row["regsokod"]: row for row in _GDF.to_dict(orient="records")
 }
 
 _LAN: dict[str, str] = {
@@ -197,16 +200,18 @@ def duva_df(
                 kommunnamn_list[idx] = None if isinstance(kn, float) else kn
             is_baltic_list[idx] = kommunkod_list[idx] is None
 
-    return df.with_columns([
-        pl.Series("regsokod", regsokod_list, dtype=pl.String),
-        pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
-        pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
-        pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
-        pl.Series("lanskod", lanskod_list, dtype=pl.String),
-        pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
-        pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
-        pl.Series("is_baltic", is_baltic_list, dtype=pl.Boolean),
-    ])
+    return df.with_columns(
+        [
+            pl.Series("regsokod", regsokod_list, dtype=pl.String),
+            pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
+            pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
+            pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
+            pl.Series("lanskod", lanskod_list, dtype=pl.String),
+            pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
+            pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
+            pl.Series("is_baltic", is_baltic_list, dtype=pl.Boolean),
+        ]
+    )
 
 
 def duva_from_kod(kod: str, as_object: bool = False) -> dict | RegSO | None:
