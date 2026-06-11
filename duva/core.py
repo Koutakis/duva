@@ -147,3 +147,30 @@ def from_name(name: str, as_object: bool = False) -> list[dict | RegSO]:
         r["offshore"] = False
         results.append(RegSO(**r) if as_object else r)
     return results
+
+
+def search(
+    name: str,
+    kommunnamn: str | None = None,
+    lansnamn: str | None = None,
+    as_object: bool = False,
+) -> list[dict | RegSO]:
+    matches = regso.GDF[regso.GDF["regsonamn"].str.lower().str.contains(name.lower())]
+
+    results = []
+    for _, row in matches.iterrows():
+        r = dict(row)
+        km = kommun.GDF_GEO[kommun.GDF_GEO["KnKod"] == r["kommunkod"]]
+        r["kommunnamn"] = km.iloc[0]["KnNamn"] if not km.empty else None
+        r["lansnamn"] = LAN.get(r["lanskod"])
+        r["not_on_land"] = False
+        r["offshore"] = False
+
+        if kommunnamn and (r["kommunnamn"] or "").lower() != kommunnamn.lower():
+            continue
+        if lansnamn and (r["lansnamn"] or "").lower() != lansnamn.lower():
+            continue
+
+        results.append(RegSO(**r) if as_object else r)
+
+    return results
