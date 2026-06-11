@@ -7,15 +7,12 @@ from shapely.geometry import Point
 _GPKG_PATH = Path(__file__).parent / "RegSO_2025.gpkg"
 _KOMMUN_PATH = Path(__file__).parent / "Kommun_Sweref99TM.TAB"
 
-_GDF: gpd.GeoDataFrame = gpd.read_file(_GPKG_PATH).drop(
-    columns=["objectid", "geometry"]
-)
+_GDF: gpd.GeoDataFrame = gpd.read_file(_GPKG_PATH).drop(columns=["objectid", "geometry"])
 _GDF_GEO: gpd.GeoDataFrame = gpd.read_file(_GPKG_PATH)[["regsokod", "geometry"]]
-_KOMMUN_GEO: gpd.GeoDataFrame = gpd.read_file(_KOMMUN_PATH)[
-    ["KnKod", "KnNamn", "geometry"]
-].set_crs("EPSG:3006", allow_override=True)
+_KOMMUN_GEO: gpd.GeoDataFrame = gpd.read_file(_KOMMUN_PATH)[["KnKod", "KnNamn", "geometry"]].set_crs("EPSG:3006", allow_override=True)
 _KOD_INDEX: dict[str, dict] = {
-    row["regsokod"]: row for row in _GDF.to_dict(orient="records")
+    row["regsokod"]: row
+    for row in _GDF.to_dict(orient="records")
 }
 
 _LAN: dict[str, str] = {
@@ -49,7 +46,7 @@ class RegSO:
     def __init__(
         self,
         not_on_land: bool,
-        is_baltic: bool = False,
+        offshore: bool = False,
         objektidentitet: str | None = None,
         objekttyp: str | None = None,
         regsokod: str | None = None,
@@ -63,7 +60,7 @@ class RegSO:
         referensdatum: str | None = None,
     ) -> None:
         self.not_on_land = not_on_land
-        self.is_baltic = is_baltic
+        self.offshore = offshore
         self.objektidentitet = objektidentitet
         self.objekttyp = objekttyp
         self.regsokod = regsokod
@@ -81,7 +78,7 @@ class RegSO:
             f"RegSO(regsokod={self.regsokod!r}, regsonamn={self.regsonamn!r}, "
             f"kommunkod={self.kommunkod!r}, kommunnamn={self.kommunnamn!r}, "
             f"lansnamn={self.lansnamn!r}, not_on_land={self.not_on_land}, "
-            f"is_baltic={self.is_baltic})"
+            f"offshore={self.offshore})"
         )
 
 
@@ -113,7 +110,7 @@ def _lookup_point(x: float, y: float) -> dict:
         kommunkod, kommunnamn = _lookup_kommun(point)
         return {
             "not_on_land": True,
-            "is_baltic": kommunkod is None,
+            "offshore": kommunkod is None,
             "kommunkod": kommunkod,
             "kommunnamn": kommunnamn,
         }
@@ -123,17 +120,17 @@ def _lookup_point(x: float, y: float) -> dict:
     row["kommunnamn"] = km.iloc[0]["KnNamn"] if not km.empty else None
     row["lansnamn"] = _LAN.get(row["lanskod"])
     row["not_on_land"] = False
-    row["is_baltic"] = False
+    row["offshore"] = False
     return row
 
 
-def duva(x: float, y: float, as_object: bool = False) -> dict | RegSO:
+def locate(x: float, y: float, as_object: bool = False) -> dict | RegSO:
     _validate(x, y)
     row = _lookup_point(x, y)
     return RegSO(**row) if as_object else row
 
 
-def duva_many(
+def locate_many(
     coords: list[tuple[float, float]],
     as_object: bool = False,
 ) -> list[dict | RegSO]:
@@ -148,7 +145,7 @@ def duva_many(
     return results
 
 
-def duva_df(
+def enrich_df(
     df: pl.DataFrame,
     x_col: str = "lon",
     y_col: str = "lat",
@@ -175,7 +172,7 @@ def duva_df(
     lanskod_list: list[str | None] = [None] * len(pdf)
     lansnamn_list: list[str | None] = [None] * len(pdf)
     not_on_land_list: list[bool] = [False] * len(pdf)
-    is_baltic_list: list[bool] = [False] * len(pdf)
+    offshore_list: list[bool] = [False] * len(pdf)
 
     for idx in pdf[valid].index:
         regso_match = joined_regso[joined_regso.index == idx]
@@ -198,23 +195,21 @@ def duva_df(
                 kn = kommun_match["KnNamn"].iloc[0]
                 kommunkod_list[idx] = None if isinstance(kk, float) else kk
                 kommunnamn_list[idx] = None if isinstance(kn, float) else kn
-            is_baltic_list[idx] = kommunkod_list[idx] is None
+            offshore_list[idx] = kommunkod_list[idx] is None
 
-    return df.with_columns(
-        [
-            pl.Series("regsokod", regsokod_list, dtype=pl.String),
-            pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
-            pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
-            pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
-            pl.Series("lanskod", lanskod_list, dtype=pl.String),
-            pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
-            pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
-            pl.Series("is_baltic", is_baltic_list, dtype=pl.Boolean),
-        ]
-    )
+    return df.with_columns([
+        pl.Series("regsokod", regsokod_list, dtype=pl.String),
+        pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
+        pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
+        pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
+        pl.Series("lanskod", lanskod_list, dtype=pl.String),
+        pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
+        pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
+        pl.Series("offshore", offshore_list, dtype=pl.Boolean),
+    ])
 
 
-def duva_from_kod(kod: str, as_object: bool = False) -> dict | RegSO | None:
+def from_code(kod: str, as_object: bool = False) -> dict | RegSO | None:
     row = _KOD_INDEX.get(kod)
     if row is None:
         return None
@@ -223,5 +218,5 @@ def duva_from_kod(kod: str, as_object: bool = False) -> dict | RegSO | None:
     row["kommunnamn"] = km.iloc[0]["KnNamn"] if not km.empty else None
     row["lansnamn"] = _LAN.get(row["lanskod"])
     row["not_on_land"] = False
-    row["is_baltic"] = False
+    row["offshore"] = False
     return RegSO(**row) if as_object else row
