@@ -16,7 +16,7 @@ where = ["."]
 include = ["duva*"]
 
 [tool.setuptools.package-data]
-duva = ["*.gpkg", "*.TAB", "*.DAT", "*.ID", "*.IND", "*.MAP"]
+"duva.geodata" = ["*.gpkg", "*.TAB", "*.DAT", "*.ID", "*.IND", "*.MAP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
