@@ -40,8 +40,6 @@ search("centrum", kommunnamn="Sollentuna", lansnamn="Stockholms län")
 
 ## RegSO object
 
-## RegSO object
-
 | Field | Type | Example | Description |
 |-------|------|---------|-------------|
 | `regsokod` | `str` | `0180R009` | SCB area code |
