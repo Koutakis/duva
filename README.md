@@ -40,26 +40,22 @@ search("centrum", kommunnamn="Sollentuna", lansnamn="Stockholms län")
 
 ## RegSO object
 
-```mermaid
-classDiagram
-    class RegSO {
-        +str regsokod
-        +str regsonamn
-        +str kommunkod
-        +str kommunnamn
-        +str lanskod
-        +str lansnamn
-        +bool not_on_land
-        +bool offshore
-        +str objektidentitet
-        +str objekttyp
-        +str version
-        +str ansvarig_organisation
-        +str referensdatum
-    }
-```
+## RegSO object
 
-`not_on_land` is `True` when the coordinate falls over water. `offshore` is `True` specifically for international water where no municipality boundary exists — a coordinate over a lake will have `not_on_land=True` but `offshore=False` since it still belongs to a municipality.
+| Field | Type | Example | Description |
+|-------|------|---------|-------------|
+| `regsokod` | `str` | `0180R009` | SCB area code |
+| `regsonamn` | `str` | `Blackeberg` | Area name |
+| `kommunkod` | `str` | `0180` | Municipality code |
+| `kommunnamn` | `str` | `Stockholm` | Municipality name |
+| `lanskod` | `str` | `01` | County code |
+| `lansnamn` | `str` | `Stockholms län` | County name |
+| `not_on_land` | `bool` | `False` | `True` if coordinate is over water |
+| `offshore` | `bool` | `False` | `True` if outside any municipality boundary (international water) |
+| `objektidentitet` | `str` | `141f6a1d-...` | SCB internal UUID |
+| `objekttyp` | `str` | `regso` | Always `regso` |
+| `version` | `str` | `2025_v2` | Dataset version |
+| `referensdatum` | `str` | `20250101` | Dataset reference date |`not_on_land` is `True` when the coordinate falls over water. `offshore` is `True` specifically for international water where no municipality boundary exists — a coordinate over a lake will have `not_on_land=True` but `offshore=False` since it still belongs to a municipality.
 
 ## Notes
 - Input coordinates must be WGS84 (standard GPS)
