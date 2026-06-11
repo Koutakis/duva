@@ -110,16 +110,18 @@ def enrich_df(
                 kommunnamn_list[idx] = None if isinstance(kn, float) else kn
             offshore_list[idx] = kommunkod_list[idx] is None
 
-    return df.with_columns([
-        pl.Series("regsokod", regsokod_list, dtype=pl.String),
-        pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
-        pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
-        pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
-        pl.Series("lanskod", lanskod_list, dtype=pl.String),
-        pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
-        pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
-        pl.Series("offshore", offshore_list, dtype=pl.Boolean),
-    ])
+    return df.with_columns(
+        [
+            pl.Series("regsokod", regsokod_list, dtype=pl.String),
+            pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
+            pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
+            pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
+            pl.Series("lanskod", lanskod_list, dtype=pl.String),
+            pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
+            pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
+            pl.Series("offshore", offshore_list, dtype=pl.Boolean),
+        ]
+    )
 
 
 def from_code(kod: str, as_object: bool = False) -> dict | RegSO | None:
