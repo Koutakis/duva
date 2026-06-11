@@ -21,3 +21,6 @@ duva = ["*.gpkg", "*.TAB", "*.DAT", "*.ID", "*.IND", "*.MAP"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
+[tool.ruff]
+line-length = 127
+
