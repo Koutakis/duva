@@ -110,18 +110,16 @@ def enrich_df(
                 kommunnamn_list[idx] = None if isinstance(kn, float) else kn
             offshore_list[idx] = kommunkod_list[idx] is None
 
-    return df.with_columns(
-        [
-            pl.Series("regsokod", regsokod_list, dtype=pl.String),
-            pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
-            pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
-            pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
-            pl.Series("lanskod", lanskod_list, dtype=pl.String),
-            pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
-            pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
-            pl.Series("offshore", offshore_list, dtype=pl.Boolean),
-        ]
-    )
+    return df.with_columns([
+        pl.Series("regsokod", regsokod_list, dtype=pl.String),
+        pl.Series("regsonamn", regsonamn_list, dtype=pl.String),
+        pl.Series("kommunkod", kommunkod_list, dtype=pl.String),
+        pl.Series("kommunnamn", kommunnamn_list, dtype=pl.String),
+        pl.Series("lanskod", lanskod_list, dtype=pl.String),
+        pl.Series("lansnamn", lansnamn_list, dtype=pl.String),
+        pl.Series("not_on_land", not_on_land_list, dtype=pl.Boolean),
+        pl.Series("offshore", offshore_list, dtype=pl.Boolean),
+    ])
 
 
 def from_code(kod: str, as_object: bool = False) -> dict | RegSO | None:
@@ -135,3 +133,17 @@ def from_code(kod: str, as_object: bool = False) -> dict | RegSO | None:
     row["not_on_land"] = False
     row["offshore"] = False
     return RegSO(**row) if as_object else row
+
+
+def from_name(name: str, as_object: bool = False) -> list[dict | RegSO]:
+    matches = regso.GDF[regso.GDF["regsonamn"].str.lower() == name.lower()]
+    results = []
+    for _, row in matches.iterrows():
+        r = dict(row)
+        km = kommun.GDF_GEO[kommun.GDF_GEO["KnKod"] == r["kommunkod"]]
+        r["kommunnamn"] = km.iloc[0]["KnNamn"] if not km.empty else None
+        r["lansnamn"] = LAN.get(r["lanskod"])
+        r["not_on_land"] = False
+        r["offshore"] = False
+        results.append(RegSO(**r) if as_object else r)
+    return results
