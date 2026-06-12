@@ -3,6 +3,7 @@ name = "duva"
 version = "0.3.4"
 requires-python = ">=3.12"
 readme = "README.md"
+license = {text = "MIT"}
 dependencies = [
     "geopandas>=1.0.0",
     "polars>=1.0.0",
@@ -25,4 +26,5 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 127
+
 
