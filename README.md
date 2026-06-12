@@ -2,7 +2,7 @@
 
 ![PyPI version](https://img.shields.io/pypi/v/duva)
 ![Python](https://img.shields.io/pypi/pyversions/duva)
-![License](https://img.shields.io/pypi/l/duva)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/koutakis/duva/blob/main/LICENSE)
 
 Reverse geocode Swedish coordinates to RegSO areas.
 
