@@ -1,20 +1,45 @@
 # duva 🕊️
+
+![PyPI version](https://img.shields.io/pypi/v/duva)
+![Python](https://img.shields.io/pypi/pyversions/duva)
+![License](https://img.shields.io/pypi/l/duva)
+
 Reverse geocode Swedish coordinates to RegSO areas.
 
 ## Install
+
 ```bash
 pip install duva
 ```
 
+## What you get
+
+```python
+locate(x=17.88, y=59.35)
+```
+
+```json
+{
+  "regsokod": "0180R009",
+  "regsonamn": "Blackeberg",
+  "kommunkod": "0180",
+  "kommunnamn": "Stockholm",
+  "lanskod": "01",
+  "lansnamn": "Stockholms län",
+  "not_on_land": false,
+  "offshore": false
+}
+```
+
 ## Usage
+
 ```python
 from duva import locate, locate_many, enrich_df, from_code, from_name, search
 
-# Single coordinate (WGS84)
+# Single coordinate (WGS84) — returns a dict
 locate(x=17.88, y=59.35)
-# {'regsonamn': 'Blackeberg', 'kommunnamn': 'Stockholm', 'lansnamn': 'Stockholms län', ...}
 
-# As object
+# As RegSO object
 result = locate(x=17.88, y=59.35, as_object=True)
 result.regsonamn  # 'Blackeberg'
 
@@ -33,8 +58,6 @@ from_name("Östermalm")  # returns all areas named Östermalm across Sweden
 
 # Search by partial name with optional kommun/län filters
 search("östermalm")
-search("östermalm", kommunnamn="Borlänge")
-search("centrum", lansnamn="Stockholms län")
 search("centrum", kommunnamn="Sollentuna", lansnamn="Stockholms län")
 ```
 
@@ -53,10 +76,13 @@ search("centrum", kommunnamn="Sollentuna", lansnamn="Stockholms län")
 | `objektidentitet` | `str` | `141f6a1d-...` | SCB internal UUID |
 | `objekttyp` | `str` | `regso` | Always `regso` |
 | `version` | `str` | `2025_v2` | Dataset version |
-| `referensdatum` | `str` | `20250101` | Dataset reference date |`not_on_land` is `True` when the coordinate falls over water. `offshore` is `True` specifically for international water where no municipality boundary exists — a coordinate over a lake will have `not_on_land=True` but `offshore=False` since it still belongs to a municipality.
+| `referensdatum` | `str` | `20250101` | Dataset reference date |
+
+`not_on_land` is `True` when the coordinate falls over water. `offshore` is `True` specifically for international water where no municipality boundary exists — a coordinate over a lake will have `not_on_land=True` but `offshore=False`.
 
 ## Notes
+
 - Input coordinates must be WGS84 (standard GPS)
-- Raises `ValueError` for invalid coordinates or coordinates outside Sweden
+- The scope of this library is to facilitate coordinate lookup inside Sweden, hence any coordinate outside its borders will raise `ValueError` for better debugging
 - Area names are not unique across Sweden — `from_name` and `search` return lists
-- Based on SCB's RegSO 2025 and municipality boundaries
+- The source of truth for spatial polygons this library relies on is given by SCB's RegSO 2025 and municipality boundaries. For further reading please visit: [SCB RegSO documentation](https://www.scb.se/hitta-statistik/regional-statistik-och-kartor/regionala-indelningar/regionala-statistikomraden-regso/)
